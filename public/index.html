@@ -9,248 +9,364 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       --bg:#131214;--surface:#1B191D;--surface2:#24212A;--surface3:#332F38;
-      --primary:#8B82FF;--pdim:rgba(139,130,255,.12);
+      --primary:#8B82FF;--pdim:rgba(139,130,255,.12);--pdim2:rgba(139,130,255,.06);
       --success:#5BD98B;--warning:#F0C246;--danger:#F07070;--info:#60C4F8;
-      --text:#F8FAFC;--muted:#94A3B8;--border:rgba(139,130,255,.09);
-      --r:12px;
+      --text:#F8FAFC;--muted:#94A3B8;--muted2:#64748B;
+      --border:rgba(139,130,255,.09);--border2:rgba(255,255,255,.06);
+      --r:12px;--r-sm:8px;
     }
     body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar{width:3px;height:3px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
+
+    /* ── Toast ── */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+    .toast{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:all;max-width:300px}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .toast.ok{border-color:rgba(91,217,139,.2);color:var(--success)}
+    .toast.err{border-color:rgba(240,112,112,.2);color:var(--danger)}
+    .toast-icon{font-size:16px;flex-shrink:0}
+
     /* ── Header ── */
-    header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
-    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px}
-    .logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--primary),#6B5FE8);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
-    .header-handle{font-size:11px;color:var(--muted);font-weight:500}
-    .hstats{display:flex;gap:20px}
-    .hs{text-align:center}
-    .hs-v{font-size:17px;font-weight:800}
-    .hs-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:16px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;flex-shrink:0}
+    .logo-mark{width:32px;height:32px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .logo-mark svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .logo-text{display:flex;flex-direction:column;gap:1px}
+    .logo-name{line-height:1}
+    .logo-handle{font-size:10px;color:var(--muted);font-weight:500;line-height:1}
+
+    .hstats{display:flex;gap:4px;flex:1;justify-content:center}
+    .hs{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border)}
+    .hs-v{font-size:15px;font-weight:800}
+    .hs-l{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
     .hs.ag .hs-v{color:var(--warning)}
     .hs.pub .hs-v{color:var(--success)}
     .hs.fail .hs-v{color:var(--danger)}
-    .btn-add{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
-    .btn-add:hover{opacity:.88}
+    .hs.draft .hs-v{color:var(--muted)}
+
+    .btn-add{background:var(--primary);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 14px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:opacity .15s}
+    .btn-add:hover{opacity:.85}
+    .btn-add svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
 
     /* ── Layout ── */
-    .app{display:grid;grid-template-columns:1fr 360px;gap:0;height:calc(100vh - 60px)}
+    .app{display:grid;grid-template-columns:1fr 340px;height:calc(100vh - 58px)}
 
-    /* ── Left: Calendar + Timeline ── */
-    .left{overflow-y:auto;padding:24px 24px 40px}
+    /* ── Left ── */
+    .left{overflow-y:auto;padding:20px 20px 40px}
 
-    /* ── Calendar grid ── */
-    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-    .cal-month{font-size:18px;font-weight:800}
-    .cal-nav{display:flex;gap:8px}
-    .cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:14px}
-    .cal-nav button:hover{color:var(--text)}
+    /* ── Calendar ── */
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cal-month{font-size:17px;font-weight:800}
+    .cal-nav{display:flex;gap:6px;align-items:center}
+    .cal-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+    .cal-nav button:hover{color:var(--text);border-color:rgba(139,130,255,.3)}
+    .today-btn{font-size:11px!important;padding:0 8px!important;width:auto!important;font-weight:700!important;font-family:inherit!important;letter-spacing:.02em}
 
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:28px}
-    .cal-dow{text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px 0 8px}
-    .cal-day{background:var(--surface);border:1px solid var(--border);border-radius:8px;min-height:72px;padding:6px;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
-    .cal-day:hover{border-color:rgba(139,130,255,.3);background:var(--pdim)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:24px}
+    .cal-dow{text-align:center;font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;padding:3px 0 8px}
+    .cal-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);min-height:66px;padding:5px 5px 4px;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+    .cal-day:hover{border-color:rgba(139,130,255,.28);background:var(--pdim2)}
     .cal-day.selected{border-color:var(--primary)!important;background:var(--pdim)}
-    .cal-day.today .cal-day-num::after{content:'';display:block;width:4px;height:4px;background:var(--primary);border-radius:50%;margin:2px auto 0}
-    .cal-day.other-month{opacity:.3;pointer-events:none}
+    .cal-day.today{border-color:rgba(139,130,255,.3)}
+    .cal-day.other-month{opacity:.22;pointer-events:none}
     .cal-day.empty{background:transparent;border-color:transparent;pointer-events:none}
-    .cal-day-num{font-size:11px;font-weight:700;color:var(--muted);text-align:center;margin-bottom:4px}
+    .cal-day-num{font-size:11px;font-weight:700;color:var(--muted);text-align:center;margin-bottom:5px;position:relative}
     .cal-day.today .cal-day-num{color:var(--primary)}
-
-    .cal-dots{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
-    .cal-dot{width:18px;height:6px;border-radius:3px;font-size:0}
+    .today-dot{display:block;width:3px;height:3px;background:var(--primary);border-radius:50%;margin:2px auto 0}
+    .cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+    .cal-dot{width:16px;height:5px;border-radius:3px}
     .cal-dot.carrossel{background:var(--primary)}
     .cal-dot.post{background:var(--info)}
     .cal-dot.reel{background:var(--success)}
     .cal-dot.story{background:var(--warning)}
-    .cal-dot.published{opacity:.45}
+    .cal-dot.published{opacity:.35}
     .cal-dot.failed{background:var(--danger)}
+    .cal-dot.draft{background:var(--muted2)}
 
-    /* ── Day detail ── */
-    .day-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:20px}
-    .day-detail-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+    /* ── Day detail section ── */
+    .section-label{font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    .day-detail{margin-bottom:0}
+    .day-detail-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .day-detail-title{font-size:14px;font-weight:700}
+    .day-detail-sub{font-size:11px;color:var(--muted);font-weight:500}
 
     /* ── Post cards ── */
-    .post-list{display:flex;flex-direction:column;gap:10px}
-    .pcard{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:start}
-    .pcard:hover{border-color:rgba(139,130,255,.2)}
-    .pcard.published{opacity:.6}
-    .pcard.failed{border-color:rgba(240,112,112,.3)}
-    .pcard-thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;background:var(--surface3)}
-    .pcard-thumb.no-img{display:flex;align-items:center;justify-content:center;font-size:22px}
-    .pcard-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:6px}
-    .type-badge{padding:1px 7px;border-radius:20px;font-size:10px;font-weight:700}
+    .post-list{display:flex;flex-direction:column;gap:8px}
+    .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:start;transition:border-color .15s}
+    .pcard:hover{border-color:rgba(139,130,255,.22)}
+    .pcard.published{opacity:.55}
+    .pcard.draft{border-style:dashed}
+    .pcard.failed{border-color:rgba(240,112,112,.28)}
+    .pcard-thumb{width:56px;height:56px;border-radius:var(--r-sm);object-fit:cover;background:var(--surface2)}
+    .pcard-thumb.no-img{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted2)}
+    .pcard-meta{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+    .type-badge{padding:1px 6px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
     .type-badge.carrossel{background:var(--pdim);color:var(--primary)}
-    .type-badge.post{background:rgba(96,196,248,.12);color:var(--info)}
-    .type-badge.reel{background:rgba(91,217,139,.12);color:var(--success)}
-    .type-badge.story{background:rgba(240,194,70,.12);color:var(--warning)}
-    .pcard-time{font-size:11px;color:var(--muted);margin-bottom:4px}
-    .pcard-title{font-size:13px;font-weight:700;margin-bottom:2px}
-    .pcard-caption{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .pcard-error{font-size:11px;color:var(--danger);margin-top:4px}
-    .pcard-igid{font-size:10px;color:var(--muted);margin-top:3px}
+    .type-badge.post{background:rgba(96,196,248,.1);color:var(--info)}
+    .type-badge.reel{background:rgba(91,217,139,.1);color:var(--success)}
+    .type-badge.story{background:rgba(240,194,70,.1);color:var(--warning)}
+    .type-badge.draft-label{background:var(--surface3);color:var(--muted)}
+    .pcard-time{font-size:10px;color:var(--muted2);font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+    .pcard-title{font-size:12px;font-weight:700;margin-bottom:2px;line-height:1.35}
+    .pcard-caption{font-size:11px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .pcard-error{font-size:10px;color:var(--danger);margin-top:5px;display:flex;align-items:center;gap:4px}
+    .pcard-igid{font-size:10px;color:var(--muted2);margin-top:4px;font-family:monospace}
 
-    .chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
-    .chip-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
-    .chip.scheduled{background:rgba(240,194,70,.12);color:var(--warning)}
-    .chip.published{background:rgba(91,217,139,.12);color:var(--success)}
-    .chip.failed{background:rgba(240,112,112,.12);color:var(--danger)}
+    .chip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .chip-dot{width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+    .chip.scheduled{background:rgba(240,194,70,.1);color:var(--warning)}
+    .chip.published{background:rgba(91,217,139,.1);color:var(--success)}
+    .chip.failed{background:rgba(240,112,112,.1);color:var(--danger)}
     .chip.publishing{background:var(--pdim);color:var(--primary)}
+    .chip.draft{background:var(--surface3);color:var(--muted)}
 
-    .pcard-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
-    .btn-sm{border:none;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:700;font-size:11px;padding:6px 12px;transition:opacity .15s;white-space:nowrap}
-    .btn-sm:disabled{opacity:.35;cursor:default}
+    .pcard-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+    .btn-sm{border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:700;font-size:10px;padding:5px 10px;transition:opacity .15s;white-space:nowrap}
+    .btn-sm:disabled{opacity:.3;cursor:default}
     .btn-sm.primary{background:var(--primary);color:#fff}
-    .btn-sm.ghost{background:var(--surface3);color:var(--muted)}
-    .btn-sm.danger{background:rgba(240,112,112,.15);color:var(--danger)}
+    .btn-sm.ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .btn-sm.danger{background:rgba(240,112,112,.1);color:var(--danger)}
+    .btn-sm:not(:disabled):hover{opacity:.8}
 
-    /* Carousel slides preview */
-    .slides-row{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
-    .slide-mini{width:32px;height:32px;border-radius:4px;object-fit:cover;background:var(--surface3)}
-    .slide-count{width:32px;height:32px;border-radius:4px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);font-weight:700}
+    .slides-row{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap}
+    .slide-mini{width:28px;height:28px;border-radius:4px;object-fit:cover;background:var(--surface3)}
+    .slide-count{width:28px;height:28px;border-radius:4px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-weight:700}
 
-    .empty-day{text-align:center;padding:32px;color:var(--muted);font-size:14px}
+    .stories-section-label{font-size:10px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;display:flex;align-items:center;gap:6px}
+    .stories-section-label::before{content:'';display:block;width:3px;height:3px;border-radius:50%;background:currentColor}
 
-    /* ── Right: Add form ── */
-    .right{background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;padding:24px}
-    .form-title{font-size:16px;font-weight:800;margin-bottom:20px}
+    /* ── Empty states ── */
+    .empty-cal{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px}
+    .empty-cal svg{width:36px;height:36px;margin-bottom:12px;opacity:.3;display:block;margin-left:auto;margin-right:auto}
+    .empty-cal-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px}
+    .empty-cal-sub{font-size:11px;color:var(--muted2)}
 
-    .fg{margin-bottom:14px}
-    label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
-    input[type=text],input[type=datetime-local],textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s}
-    input:focus,textarea:focus,select:focus{border-color:var(--primary)}
+    /* ── Right panel ── */
+    .right{background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+    .right-header{padding:18px 20px 0;flex-shrink:0}
+    .right-title{font-size:14px;font-weight:800;margin-bottom:4px}
+    .right-sub{font-size:11px;color:var(--muted2);margin-bottom:16px}
+    .right-divider{height:1px;background:var(--border);margin:0 -20px 16px}
+    .right-body{padding:0 20px 80px;flex:1}
+
+    .fg{margin-bottom:12px}
+    label{display:block;font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+
+    input[type=text],input[type=datetime-local],textarea,select{
+      width:100%;background:var(--surface2);border:1px solid var(--border2);
+      border-radius:var(--r-sm);color:var(--text);font-family:inherit;
+      font-size:12px;padding:8px 11px;outline:none;transition:border-color .15s
+    }
+    input:focus,textarea:focus,select:focus{border-color:rgba(139,130,255,.5)}
+    input::placeholder,textarea::placeholder{color:var(--muted2)}
     select option{background:var(--surface2)}
-    textarea{resize:vertical;min-height:80px;line-height:1.5}
+    textarea{resize:vertical;min-height:76px;line-height:1.5}
 
     /* Type selector */
-    .type-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:2px}
-    .type-tab{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;font-size:11px;font-weight:700;color:var(--muted)}
-    .type-tab:hover{border-color:rgba(139,130,255,.3);color:var(--text)}
+    .type-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:2px}
+    .type-tab{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 2px;text-align:center;cursor:pointer;transition:all .15s;font-size:10px;font-weight:700;color:var(--muted);line-height:1}
+    .type-tab:hover{border-color:rgba(139,130,255,.25);color:var(--text)}
     .type-tab.active{border-color:var(--primary);background:var(--pdim);color:var(--primary)}
-    .type-tab .tab-icon{font-size:16px;display:block;margin-bottom:3px}
+    .type-tab .tab-icon{font-size:14px;display:block;margin-bottom:3px;line-height:1}
 
     /* Upload */
-    .upload-zone{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+    .upload-zone{border:1px dashed rgba(139,130,255,.2);border-radius:var(--r-sm);padding:18px 12px;text-align:center;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;background:var(--pdim2)}
     .upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--pdim)}
     .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .upload-zone .uz-icon{font-size:24px;margin-bottom:6px}
-    .upload-zone .uz-text{font-size:12px;color:var(--muted)}
-    .upload-hint{font-size:11px;color:var(--muted);margin-top:4px}
+    .upload-zone svg{width:24px;height:24px;margin-bottom:8px;opacity:.5;display:block;margin-left:auto;margin-right:auto}
+    .upload-zone .uz-text{font-size:11px;color:var(--muted);line-height:1.5}
+    .upload-zone .uz-strong{font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:2px}
+    .upload-hint{font-size:10px;color:var(--muted2);margin-top:5px}
 
-    .previews{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .previews{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
     .prev-wrap{position:relative}
-    .prev-img{width:52px;height:52px;border-radius:6px;object-fit:cover}
-    .prev-rm{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--danger);border-radius:50%;border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .prev-img{width:48px;height:48px;border-radius:6px;object-fit:cover;display:block}
+    .prev-rm{position:absolute;top:-4px;right:-4px;width:15px;height:15px;background:var(--danger);border-radius:50%;border:none;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1}
 
-    .btn-submit{width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:opacity .15s;margin-top:4px}
+    /* Submit area */
+    .submit-area{padding:16px 20px;border-top:1px solid var(--border);background:var(--surface);position:sticky;bottom:0;display:flex;gap:8px}
+    .btn-submit{flex:1;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-sm);font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;transition:opacity .15s}
     .btn-submit:hover{opacity:.88}
     .btn-submit:disabled{opacity:.4;cursor:default}
+    .btn-draft{flex:0 0 auto;padding:10px 14px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+    .btn-draft:hover{color:var(--text)}
 
-    .fb{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:12px;display:none}
-    .fb.ok{background:rgba(91,217,139,.12);color:var(--success);display:block}
-    .fb.err{background:rgba(240,112,112,.12);color:var(--danger);display:block}
+    /* Section divider in form */
+    .form-section{font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 
-    /* Scroll */
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
-
-    @media(max-width:900px){
+    @media(max-width:860px){
       .app{grid-template-columns:1fr;height:auto}
-      .right{border-left:none;border-top:1px solid var(--border)}
+      .right{border-left:none;border-top:1px solid var(--border);min-height:auto}
+      .hstats{display:none}
+      .btn-add span{display:none}
+    }
+    @media(max-width:480px){
+      header{padding:0 16px}
+      .left{padding:16px 12px 120px}
+      .cal-day{min-height:54px}
     }
   </style>
 </head>
 <body>
 
+<!-- Toast container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
 <header>
   <div class="logo">
-    <div class="logo-mark">📅</div>
-    <div>
-      <div>Content Planner</div>
-      <div class="header-handle">@girru.ai</div>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="13" x2="10" y2="13"/>
+        <line x1="8" y1="17" x2="10" y2="17"/>
+        <line x1="12" y1="13" x2="14" y2="13"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">Content Planner</div>
+      <div class="logo-handle">@girru.ai</div>
     </div>
   </div>
   <div class="hstats">
-    <div class="hs ag"><div class="hs-v" id="s-ag">–</div><div class="hs-l">Agendados</div></div>
-    <div class="hs pub"><div class="hs-v" id="s-pub">–</div><div class="hs-l">Publicados</div></div>
-    <div class="hs fail"><div class="hs-v" id="s-fail">–</div><div class="hs-l">Falhas</div></div>
+    <div class="hs ag">
+      <div class="hs-v" id="s-ag">–</div>
+      <div class="hs-l">Agendados</div>
+    </div>
+    <div class="hs pub">
+      <div class="hs-v" id="s-pub">–</div>
+      <div class="hs-l">Publicados</div>
+    </div>
+    <div class="hs draft">
+      <div class="hs-v" id="s-draft">–</div>
+      <div class="hs-l">Rascunhos</div>
+    </div>
+    <div class="hs fail">
+      <div class="hs-v" id="s-fail">–</div>
+      <div class="hs-l">Falhas</div>
+    </div>
   </div>
+  <button class="btn-add" onclick="scrollToForm()">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span>Novo post</span>
+  </button>
 </header>
 
 <div class="app">
   <!-- LEFT -->
-  <div class="left">
+  <div class="left" id="left-panel">
     <!-- Calendar -->
     <div class="cal-header">
       <div class="cal-month" id="cal-month"></div>
       <div class="cal-nav">
         <button id="cal-prev" onclick="changeMonth(-1)">‹</button>
+        <button class="today-btn" onclick="goToday()">Hoje</button>
         <button id="cal-next" onclick="changeMonth(1)">›</button>
       </div>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
 
     <!-- Day detail -->
-    <div class="day-detail">
-      <div class="day-detail-title" id="day-title">Selecione um dia no calendário</div>
+    <div class="day-detail" id="day-detail">
+      <div class="day-detail-hd">
+        <div>
+          <div class="day-detail-title" id="day-title">Calendário</div>
+          <div class="day-detail-sub" id="day-sub">Clique em um dia para ver os posts</div>
+        </div>
+      </div>
       <div id="day-content">
-        <div class="empty-day">Clique em um dia para ver os posts.</div>
+        <div class="empty-cal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <circle cx="12" cy="15" r="2"/>
+          </svg>
+          <div class="empty-cal-title">Selecione um dia</div>
+          <div class="empty-cal-sub">Clique em qualquer data no calendário</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT -->
-  <div class="right">
-    <div class="form-title">Agendar conteúdo</div>
-    <form id="form" enctype="multipart/form-data">
+  <!-- RIGHT: Form -->
+  <div class="right" id="right-panel">
+    <div class="right-header">
+      <div class="right-title">Agendar conteúdo</div>
+      <div class="right-sub">Preencha e agende ou salve como rascunho</div>
+      <div class="right-divider"></div>
+    </div>
+    <div class="right-body">
+      <form id="form" enctype="multipart/form-data">
 
-      <div class="fg">
-        <label>Tipo de conteúdo</label>
-        <div class="type-tabs">
-          <div class="type-tab active" data-type="carrossel" onclick="setType('carrossel')">
-            <span class="tab-icon">🎠</span>Carrossel
+        <div class="form-section">Tipo de conteúdo</div>
+        <div class="fg">
+          <div class="type-tabs">
+            <div class="type-tab active" data-type="carrossel" onclick="setType('carrossel')">
+              <span class="tab-icon">🎠</span>Carrossel
+            </div>
+            <div class="type-tab" data-type="reel" onclick="setType('reel')">
+              <span class="tab-icon">🎬</span>Reel
+            </div>
+            <div class="type-tab" data-type="post" onclick="setType('post')">
+              <span class="tab-icon">🖼️</span>Post
+            </div>
+            <div class="type-tab" data-type="story" onclick="setType('story')">
+              <span class="tab-icon">⭕</span>Story
+            </div>
           </div>
-          <div class="type-tab" data-type="reel" onclick="setType('reel')">
-            <span class="tab-icon">🎬</span>Reel
-          </div>
-          <div class="type-tab" data-type="post" onclick="setType('post')">
-            <span class="tab-icon">🖼️</span>Post
-          </div>
-          <div class="type-tab" data-type="story" onclick="setType('story')">
-            <span class="tab-icon">⭕</span>Story
-          </div>
+          <input type="hidden" name="type" id="type-input" value="carrossel">
         </div>
-        <input type="hidden" name="type" id="type-input" value="carrossel">
-      </div>
 
-      <div class="fg">
-        <label>Título interno (referência)</label>
-        <input type="text" name="title" id="title" placeholder="Ex: Post 2 — IA no Food Service">
-      </div>
-
-      <div class="fg" id="upload-group">
-        <label id="upload-label">Slides (arraste em ordem)</label>
-        <div class="upload-zone" id="uz" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
-          <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
-          <div class="uz-icon">🖼️</div>
-          <div class="uz-text">Clique ou arraste as imagens aqui</div>
+        <div class="form-section">Identificação</div>
+        <div class="fg">
+          <label>Título interno</label>
+          <input type="text" name="title" id="title" placeholder="Ex: Post 2 — IA no Food Service">
         </div>
-        <div class="upload-hint" id="upload-hint">Para carrossel: suba os slides em ordem. Máx. 10 imagens, 30MB cada.</div>
-        <div class="previews" id="previews"></div>
-      </div>
 
-      <div class="fg">
-        <label>Caption</label>
-        <textarea name="caption" id="caption" placeholder="Legenda do post no Instagram..." required></textarea>
-      </div>
+        <div class="fg">
+          <label>Data e hora</label>
+          <input type="datetime-local" name="scheduledAt" id="scheduledAt" required>
+        </div>
 
-      <div class="fg">
-        <label>Data e hora</label>
-        <input type="datetime-local" name="scheduledAt" id="scheduledAt" required>
-      </div>
+        <div class="form-section">Conteúdo</div>
+        <div class="fg" id="upload-group">
+          <label id="upload-label">Slides (arraste em ordem)</label>
+          <div class="upload-zone" id="uz"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="handleDrop(event)">
+            <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span class="uz-strong">Clique ou arraste aqui</span>
+            <span class="uz-text">PNG, JPG, WebP — máx 30 MB</span>
+          </div>
+          <div class="upload-hint" id="upload-hint">Para carrossel: envie os slides em ordem. Máx 10 imagens.</div>
+          <div class="previews" id="previews"></div>
+        </div>
 
-      <button type="submit" class="btn-submit" id="submit-btn">Agendar</button>
-      <div class="fb" id="fb"></div>
-    </form>
+        <div class="fg">
+          <label>Caption do Instagram</label>
+          <textarea name="caption" id="caption" placeholder="Legenda do post no Instagram..." required></textarea>
+        </div>
+
+      </form>
+    </div>
+    <div class="submit-area">
+      <button type="button" class="btn-draft" id="draft-btn" onclick="saveDraft()">Rascunho</button>
+      <button type="submit" form="form" class="btn-submit" id="submit-btn">Agendar post</button>
+    </div>
   </div>
 </div>
 
@@ -258,9 +374,24 @@
   // ── State ──────────────────────────────────────────────────────────────
   let posts = [];
   let viewYear = new Date().getFullYear();
-  let viewMonth = new Date().getMonth(); // 0-indexed
+  let viewMonth = new Date().getMonth();
   let selectedDate = null;
-  let fileObjects = []; // para preview e envio
+  let fileObjects = [];
+
+  // ── Toast system ──────────────────────────────────────────────────────
+  function showToast(msg, type = 'ok', duration = 4000) {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    const icon = type === 'ok' ? '✓' : '✕';
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icon}</span>${msg}`;
+    wrap.appendChild(t);
+    requestAnimationFrame(() => { t.classList.add('show'); });
+    setTimeout(() => {
+      t.classList.remove('show');
+      setTimeout(() => t.remove(), 300);
+    }, duration);
+  }
 
   // ── Load ───────────────────────────────────────────────────────────────
   async function load() {
@@ -270,6 +401,7 @@
     document.getElementById('s-ag').textContent = st.scheduled;
     document.getElementById('s-pub').textContent = st.published;
     document.getElementById('s-fail').textContent = st.failed;
+    document.getElementById('s-draft').textContent = st.draft || 0;
     renderCalendar();
     if (selectedDate) renderDay(selectedDate);
   }
@@ -278,38 +410,43 @@
   const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const DOWS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
-  function changeMonth(d) { viewMonth += d; if(viewMonth<0){viewMonth=11;viewYear--;}else if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar(); }
+  function changeMonth(d) {
+    viewMonth += d;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    else if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    renderCalendar();
+  }
+
+  function goToday() {
+    viewYear = new Date().getFullYear();
+    viewMonth = new Date().getMonth();
+    renderCalendar();
+  }
 
   function renderCalendar() {
     document.getElementById('cal-month').textContent = `${MONTHS[viewMonth]} ${viewYear}`;
     const grid = document.getElementById('cal-grid');
 
-    // Day-of-week headers
     let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
 
     const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const today = new Date();
 
-    // Empty cells before month
     for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isToday = today.getFullYear()===viewYear && today.getMonth()===viewMonth && today.getDate()===d;
+      const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const isToday = today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === d;
       const isSel = selectedDate === dateStr;
       const dayPosts = posts.filter(p => p.scheduledAt.startsWith(dateStr));
-
-      let dots = dayPosts.map(p =>
-        `<div class="cal-dot ${p.type} ${p.status}" title="${p.title||p.type}"></div>`
-      ).join('');
-
-      html += `<div class="cal-day ${isToday?'today':''} ${isSel?'selected':''}" onclick="selectDay('${dateStr}')">
-        <div class="cal-day-num">${d}</div>
+      const dots = dayPosts.map(p => `<div class="cal-dot ${p.type} ${p.status}" title="${p.title||p.type}"></div>`).join('');
+      const todayMark = isToday ? '<span class="today-dot"></span>' : '';
+      html += `<div class="cal-day${isToday?' today':''}${isSel?' selected':''}" onclick="selectDay('${dateStr}')">
+        <div class="cal-day-num">${d}${todayMark}</div>
         <div class="cal-dots">${dots}</div>
       </div>`;
     }
-
     grid.innerHTML = html;
   }
 
@@ -317,48 +454,49 @@
     selectedDate = dateStr;
     renderCalendar();
     renderDay(dateStr);
-    // Pre-fill date in form
-    const [y,m,d] = dateStr.split('-');
+    const [y, m, d] = dateStr.split('-');
     document.getElementById('scheduledAt').value = `${y}-${m}-${d}T10:00`;
   }
 
   function renderDay(dateStr) {
-    const [y,m,d] = dateStr.split('-');
-    const label = new Date(y, m-1, d).toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
-    document.getElementById('day-title').textContent = label;
-
+    const [y, m, d] = dateStr.split('-');
+    const label = new Date(y, m - 1, d).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
     const dayPosts = posts.filter(p => p.scheduledAt.startsWith(dateStr))
-      .sort((a,b) => new Date(a.scheduledAt)-new Date(b.scheduledAt));
+      .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt));
+
+    document.getElementById('day-title').textContent = label.charAt(0).toUpperCase() + label.slice(1);
+    document.getElementById('day-sub').textContent = dayPosts.length
+      ? `${dayPosts.length} post${dayPosts.length > 1 ? 's' : ''} neste dia`
+      : 'Nenhum conteúdo neste dia';
 
     if (!dayPosts.length) {
-      document.getElementById('day-content').innerHTML = `<div class="empty-day">Nenhum conteúdo agendado para este dia.</div>`;
+      document.getElementById('day-content').innerHTML = `
+        <div class="empty-cal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <div class="empty-cal-title">Dia livre</div>
+          <div class="empty-cal-sub">Preencha o formulário ao lado para agendar um post</div>
+        </div>`;
       return;
     }
 
-    // Separate feed vs stories
     const feed = dayPosts.filter(p => p.type !== 'story');
     const stories = dayPosts.filter(p => p.type === 'story');
-
     let html = '<div class="post-list">';
-
-    if (feed.length) {
-      html += feed.map(p => renderCard(p)).join('');
-    }
-
+    if (feed.length) html += feed.map(p => renderCard(p)).join('');
     if (stories.length) {
-      html += `<div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 4px;padding:0 2px">Stories (${stories.length})</div>`;
+      html += `<div class="stories-section-label">Stories (${stories.length})</div>`;
       html += stories.map(p => renderCard(p)).join('');
     }
-
     html += '</div>';
     document.getElementById('day-content').innerHTML = html;
   }
 
   function renderCard(p) {
-    const time = new Date(p.scheduledAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    const typeIcon = {carrossel:'🎠',reel:'🎬',post:'🖼️',story:'⭕'}[p.type] || '📄';
+    const time = new Date(p.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const typeIcon = { carrossel: '🎠', reel: '🎬', post: '🖼️', story: '⭕' }[p.type] || '📄';
 
-    // Thumbnail: first image or type icon
     let thumb;
     if (p.images && p.images.length) {
       const imgSrc = p.images[0].startsWith('http') ? p.images[0] : `/uploads/${p.images[0]}`;
@@ -367,7 +505,6 @@
       thumb = `<div class="pcard-thumb no-img">${typeIcon}</div>`;
     }
 
-    // Extra slides preview for carousel
     let slidesRow = '';
     if (p.type === 'carrossel' && p.images && p.images.length > 1) {
       slidesRow = `<div class="slides-row">
@@ -380,34 +517,49 @@
       ? `<button class="btn-sm ghost" disabled>Publicado</button>`
       : p.status === 'publishing'
       ? `<button class="btn-sm ghost" disabled>Publicando…</button>`
+      : p.status === 'draft'
+      ? `<button class="btn-sm primary" onclick="publishNow('${p.id}')">Publicar</button>
+         <button class="btn-sm danger" onclick="del('${p.id}')">Excluir</button>`
       : `<button class="btn-sm primary" onclick="publishNow('${p.id}')">Publicar agora</button>
          <button class="btn-sm danger" onclick="del('${p.id}')">Cancelar</button>`;
 
     const extra = p.status === 'failed'
-      ? `<div class="pcard-error">Erro: ${esc(p.errorMessage || '?')}</div>`
+      ? `<div class="pcard-error">⚠ ${esc(p.errorMessage || 'Erro desconhecido')}</div>`
       : p.status === 'published' && p.instagramPostId
       ? `<div class="pcard-igid">ID: ${p.instagramPostId}</div>`
       : '';
 
+    const draftBadge = p.status === 'draft' ? `<span class="type-badge draft-label">rascunho</span>` : '';
+
     return `<div class="pcard ${p.status}" data-id="${p.id}">
       ${thumb}
       <div>
-        <div class="pcard-type">
+        <div class="pcard-meta">
           <span class="type-badge ${p.type}">${p.type}</span>
+          ${draftBadge}
           <span class="chip ${p.status}"><span class="chip-dot"></span>${statusLabel(p.status)}</span>
         </div>
-        <div class="pcard-time">${time}</div>
+        <div class="pcard-time">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${time}
+        </div>
         ${p.title ? `<div class="pcard-title">${esc(p.title)}</div>` : ''}
         <div class="pcard-caption">${esc(p.caption)}</div>
-        ${slidesRow}
-        ${extra}
+        ${slidesRow}${extra}
       </div>
       <div class="pcard-actions">${actions}</div>
     </div>`;
   }
 
-  function statusLabel(s) { return {scheduled:'Agendado',published:'Publicado',failed:'Falhou',publishing:'Publicando'}[s]||s; }
-  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function statusLabel(s) {
+    return { scheduled: 'Agendado', published: 'Publicado', failed: 'Falhou', publishing: 'Publicando', draft: 'Rascunho' }[s] || s;
+  }
+  function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function scrollToForm() {
+    document.getElementById('right-panel').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('title').focus();
+  }
 
   // ── Actions ────────────────────────────────────────────────────────────
   async function del(id) {
@@ -420,7 +572,11 @@
     if (!confirm('Publicar agora no Instagram?')) return;
     const r = await fetch(`/api/posts/${id}/publish-now`, { method: 'POST' });
     const d = await r.json();
-    if (!d.success) alert('Erro: ' + (d.error || '?'));
+    if (d.success) {
+      showToast('Post publicado no Instagram!', 'ok');
+    } else {
+      showToast('Erro: ' + (d.error || '?'), 'err', 6000);
+    }
     load();
   }
 
@@ -430,22 +586,24 @@
     document.querySelectorAll('.type-tab').forEach(el => el.classList.toggle('active', el.dataset.type === t));
     const label = document.getElementById('upload-label');
     const hint = document.getElementById('upload-hint');
-    const ugr = document.getElementById('upload-group');
-    if (t === 'carrossel') { label.textContent = 'Slides (arraste em ordem)'; hint.textContent = 'Suba os slides em ordem. Máx. 10 imagens.'; ugr.style.display=''; }
-    else if (t === 'post')  { label.textContent = 'Imagem'; hint.textContent = ''; ugr.style.display=''; }
-    else if (t === 'story') { label.textContent = 'Imagem do story (opcional)'; hint.textContent = ''; ugr.style.display=''; }
-    else if (t === 'reel')  { label.textContent = 'Thumbnail (capa do reel)'; hint.textContent = 'Suba a capa para referência visual.'; ugr.style.display=''; }
+    if (t === 'carrossel') { label.textContent = 'Slides (arraste em ordem)'; hint.textContent = 'Suba os slides em ordem. Máx 10 imagens.'; }
+    else if (t === 'post') { label.textContent = 'Imagem do post'; hint.textContent = ''; }
+    else if (t === 'story') { label.textContent = 'Imagem do story'; hint.textContent = 'Opcional — para referência visual.'; }
+    else if (t === 'reel') { label.textContent = 'Thumbnail (capa)'; hint.textContent = 'Suba a capa para referência visual.'; }
   }
 
   // ── File handling ──────────────────────────────────────────────────────
   function handleFiles(files) { for (const f of files) addFile(f); }
-  function handleDrop(e) { e.preventDefault(); document.getElementById('uz').classList.remove('drag'); handleFiles(e.dataTransfer.files); }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uz').classList.remove('drag');
+    handleFiles(e.dataTransfer.files);
+  }
 
   function addFile(file) {
     if (!file.type.startsWith('image/')) return;
     const idx = fileObjects.length;
     fileObjects.push(file);
-
     const reader = new FileReader();
     reader.onload = e => {
       const wrap = document.createElement('div');
@@ -463,18 +621,27 @@
     if (wrap) wrap.remove();
   }
 
+  function resetForm() {
+    document.getElementById('form').reset();
+    fileObjects = [];
+    document.getElementById('previews').innerHTML = '';
+    setType('carrossel');
+    const tom = new Date(); tom.setDate(tom.getDate() + 1); tom.setHours(10, 0, 0, 0);
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('scheduledAt').value = `${tom.getFullYear()}-${pad(tom.getMonth()+1)}-${pad(tom.getDate())}T10:00`;
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').textContent = 'Agendar post';
+  }
+
   // ── Form submit ────────────────────────────────────────────────────────
-  // Default date: tomorrow 10h
-  const tom = new Date(); tom.setDate(tom.getDate()+1); tom.setHours(10,0,0,0);
-  const pad = n => String(n).padStart(2,'0');
+  const tom = new Date(); tom.setDate(tom.getDate() + 1); tom.setHours(10, 0, 0, 0);
+  const pad = n => String(n).padStart(2, '0');
   document.getElementById('scheduledAt').value = `${tom.getFullYear()}-${pad(tom.getMonth()+1)}-${pad(tom.getDate())}T10:00`;
 
   document.getElementById('form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('submit-btn');
-    const fb = document.getElementById('fb');
     btn.disabled = true; btn.textContent = 'Agendando…';
-    fb.className = 'fb';
 
     const formData = new FormData();
     formData.append('type', document.getElementById('type-input').value);
@@ -489,21 +656,49 @@
       const res = await fetch('/api/posts', { method: 'POST', body: formData });
       const data = await res.json();
       if (data.success) {
-        fb.className = 'fb ok'; fb.textContent = 'Post agendado com sucesso!';
-        this.reset(); fileObjects = []; document.getElementById('previews').innerHTML = '';
-        setType('carrossel');
-        document.getElementById('scheduledAt').value = `${tom.getFullYear()}-${pad(tom.getMonth()+1)}-${pad(tom.getDate())}T10:00`;
+        showToast('Post agendado com sucesso!', 'ok');
+        resetForm();
         load();
       } else {
-        fb.className = 'fb err'; fb.textContent = 'Erro: ' + (data.error || '?');
+        showToast('Erro: ' + (data.error || '?'), 'err', 6000);
+        btn.disabled = false; btn.textContent = 'Agendar post';
       }
-    } catch { fb.className = 'fb err'; fb.textContent = 'Erro de conexão.'; }
-
-    btn.disabled = false; btn.textContent = 'Agendar';
+    } catch {
+      showToast('Erro de conexão. Tente novamente.', 'err');
+      btn.disabled = false; btn.textContent = 'Agendar post';
+    }
   });
 
+  // ── Save Draft ─────────────────────────────────────────────────────────
+  async function saveDraft() {
+    const btn = document.getElementById('draft-btn');
+    btn.disabled = true; btn.textContent = 'Salvando…';
+    try {
+      const res = await fetch('/api/posts/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: document.getElementById('type-input').value,
+          title: document.getElementById('title').value,
+          caption: document.getElementById('caption').value,
+          scheduledAt: new Date(document.getElementById('scheduledAt').value).toISOString()
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Rascunho salvo!', 'ok');
+        resetForm();
+        load();
+      } else {
+        showToast('Erro ao salvar: ' + (data.error || '?'), 'err', 6000);
+      }
+    } catch {
+      showToast('Erro de conexão.', 'err');
+    }
+    btn.disabled = false; btn.textContent = 'Rascunho';
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────
-  // Abrir no mês atual
   viewYear = new Date().getFullYear(); viewMonth = new Date().getMonth();
   load();
   setInterval(load, 30000);
