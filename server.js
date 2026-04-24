@@ -34,6 +34,7 @@ if (!APP_PASSWORD) {
 const DATA_DIR = path.join(__dirname, 'data');
 const SCHEDULE_FILE = path.join(DATA_DIR, 'schedule.json');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -85,7 +86,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { password } = req.body;
-  if (password === APP_PASSWORD) {
+  if (password === getPassword()) {
     req.session.authenticated = true;
     res.redirect('/');
   } else {
@@ -114,6 +115,23 @@ function save(data) {
 
 function genId() {
   return `p_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+// ─── Config helpers (senha persistida em disco) ───────────────────────────────
+
+function readConfig() {
+  try { return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')); }
+  catch { return {}; }
+}
+
+function saveConfig(data) {
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2));
+}
+
+// Senha ativa: config.json > env var
+function getPassword() {
+  const cfg = readConfig();
+  return cfg.password || APP_PASSWORD;
 }
 
 // ─── Accounts helpers ─────────────────────────────────────────────────────────
@@ -243,6 +261,29 @@ app.post('/api/accounts/:id/test', async (req, res) => {
 
 app.get('/configuracoes', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'configuracoes.html'));
+});
+
+app.post('/api/change-password', (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Preencha todos os campos' });
+  }
+  if (currentPassword !== getPassword()) {
+    return res.status(400).json({ error: 'Senha atual incorreta' });
+  }
+  if (newPassword.length < 4) {
+    return res.status(400).json({ error: 'Nova senha deve ter ao menos 4 caracteres' });
+  }
+
+  const cfg = readConfig();
+  cfg.password = newPassword;
+  saveConfig(cfg);
+
+  // Invalidar todas as sessões forçando re-login
+  req.session.destroy(() => {});
+
+  res.json({ success: true });
 });
 
 // ─── catbox.moe upload ────────────────────────────────────────────────────────
