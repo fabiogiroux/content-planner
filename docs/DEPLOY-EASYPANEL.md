@@ -4,7 +4,7 @@
 
 - Acesso ao EasyPanel (projeto **Automation**)
 - Repositório GitHub com o código (ou upload direto do Dockerfile)
-- Token Instagram válido (ver `/root/assistente-pessoal/.env`)
+- Token Instagram válido (ver `/home/administrator/assistente-pessoal/.env`)
 
 ---
 
@@ -81,7 +81,7 @@ Em **Environment Variables**:
 Ao final de cada produção de conteúdo (squad design-posts), o agente Diego Design executa:
 
 ```bash
-node /root/instagram-scheduler/add-to-schedule.js \
+node /home/administrator/instagram-scheduler/add-to-schedule.js \
   --type carrossel \
   --title "Post 3 — Ficha Técnica" \
   --caption "Legenda completa do post..." \

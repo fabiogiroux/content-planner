@@ -87,7 +87,7 @@ Nos cards dos posts tem o botão **Publicar agora** — clica para publicar imed
 Quando o squad de design finaliza um post, registrar direto no schedule:
 
 ```bash
-node /root/instagram-scheduler/add-to-schedule.js \
+node /home/administrator/instagram-scheduler/add-to-schedule.js \
   --type carrossel \
   --title "Post 3 — Ficha Técnica" \
   --caption "Legenda completa aqui...

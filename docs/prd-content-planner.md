@@ -20,7 +20,7 @@
 
 O @girru.ai é o perfil de conteúdo do EasyVision (SaaS de ficha técnica para food service). O time de conteúdo roda 7 squads em sequência: estratégia → calendário → copy → design → revisão → vídeo → métricas. O Squad de Design gera slides visuais como PNGs via Playwright. Esses PNGs precisam ser publicados no Instagram no horário certo, sem que Fabio precise fazer upload manual.
 
-Hoje existe um protótipo funcional em `/root/instagram-scheduler/` com backend Node.js, cron job e webapp de calendário. O bloqueio principal é a ausência de URLs HTTPS para as imagens — a Meta API rejeita URLs HTTP. A solução é deployar o scheduler no EasyPanel (projeto "Automation"), que já provê HTTPS automático via Let's Encrypt.
+Hoje existe um protótipo funcional em `/home/administrator/instagram-scheduler/` com backend Node.js, cron job e webapp de calendário. O bloqueio principal é a ausência de URLs HTTPS para as imagens — a Meta API rejeita URLs HTTP. A solução é deployar o scheduler no EasyPanel (projeto "Automation"), que já provê HTTPS automático via Let's Encrypt.
 
 ---
 
@@ -118,7 +118,7 @@ curl -F "reqtype=fileupload" -F "fileToUpload=@/caminho/slide.png" https://catbo
 Esse método foi usado para publicar o Post 6 (08/04/2026) com sucesso.
 
 ### Código base existente
-Todo o código está em `/root/instagram-scheduler/` no VPS. A implementação na próxima sessão é essencialmente:
+Todo o código está em `/home/administrator/instagram-scheduler/` no VPS. A implementação na próxima sessão é essencialmente:
 1. Criar `Dockerfile`
 2. Criar serviço no EasyPanel com volumes e env vars
 3. Ajustar `server.js` para usar `PUBLIC_URL` do env
@@ -135,7 +135,7 @@ Todo o código está em `/root/instagram-scheduler/` no VPS. A implementação n
 Como desenvolvedor, quero um Dockerfile para o scheduler, para que o EasyPanel possa buildar e rodar o serviço.
 
 **Acceptance Criteria:**
-1. `Dockerfile` criado em `/root/instagram-scheduler/` com Node.js 20 Alpine
+1. `Dockerfile` criado em `/home/administrator/instagram-scheduler/` com Node.js 20 Alpine
 2. `.dockerignore` excluindo `node_modules`, `uploads/`, `data/`
 3. `docker build` executa sem erro localmente
 4. Container sobe e responde em `GET /api/status` com `200 OK`
@@ -195,7 +195,7 @@ Como Fabio, quero ver os 17 posts de Abril 2026 no calendário mesmo antes de to
 ### Arquivos existentes no VPS
 
 ```
-/root/instagram-scheduler/
+/home/administrator/instagram-scheduler/
 ├── server.js          ← backend completo (Express + cron + Instagram API)
 ├── add-to-schedule.js ← CLI para registrar posts aprovados
 ├── publish.js         ← módulo de publicação Meta API
@@ -212,7 +212,7 @@ Como Fabio, quero ver os 17 posts de Abril 2026 no calendário mesmo antes de to
 
 | Variável | Valor |
 |----------|-------|
-| `INSTAGRAM_USER_TOKEN` | Ver `/root/assistente-pessoal/.env` |
+| `INSTAGRAM_USER_TOKEN` | Ver `/home/administrator/assistente-pessoal/.env` |
 | `INSTAGRAM_PAGE_ID` | `968835909655890` |
 | `INSTAGRAM_USER_ID` (IG Business) | `17841440286252925` |
 | EasyPanel URL | `https://[ip-do-vps]` (autenticação via GitHub secrets) |
@@ -250,7 +250,7 @@ Criar `Dockerfile` → criar serviço EasyPanel → configurar env vars → **te
 ## 9. Prompts para próxima sessão
 
 ### Para o @dev (Dex) — Story 1.1
-> "Implemente a Story 1.1 do PRD em `/root/instagram-scheduler/docs/prd-content-planner.md`. Crie o `Dockerfile` e `.dockerignore` para o scheduler Node.js em `/root/instagram-scheduler/`. Node 20 Alpine, volumes `/app/data` e `/app/uploads`, porta 3001. Teste o build localmente."
+> "Implemente a Story 1.1 do PRD em `/home/administrator/instagram-scheduler/docs/prd-content-planner.md`. Crie o `Dockerfile` e `.dockerignore` para o scheduler Node.js em `/home/administrator/instagram-scheduler/`. Node 20 Alpine, volumes `/app/data` e `/app/uploads`, porta 3001. Teste o build localmente."
 
 ### Para o @devops (Gage) — Story 1.2
-> "Implemente a Story 1.2 do PRD. Configure o serviço `scheduler` no EasyPanel projeto `Automation`. Dockerfile em `/root/instagram-scheduler/`. Volumes persistentes para `/app/data` e `/app/uploads`. Env vars: `INSTAGRAM_USER_TOKEN`, `PUBLIC_URL`, `PORT=3001`. Configure domínio HTTPS."
+> "Implemente a Story 1.2 do PRD. Configure o serviço `scheduler` no EasyPanel projeto `Automation`. Dockerfile em `/home/administrator/instagram-scheduler/`. Volumes persistentes para `/app/data` e `/app/uploads`. Env vars: `INSTAGRAM_USER_TOKEN`, `PUBLIC_URL`, `PORT=3001`. Configure domínio HTTPS."
