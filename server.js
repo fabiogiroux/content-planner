@@ -3,6 +3,7 @@ const multer = require('multer');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const FormData = require('form-data');
 const session = require('express-session');
 const puppeteer = require('puppeteer');
@@ -35,6 +36,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const SCHEDULE_FILE = path.join(DATA_DIR, 'schedule.json');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
+const PENDING_FILE = path.join(DATA_DIR, 'pending.json');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -64,7 +66,7 @@ app.use(session({
 
 // ─── Auth middleware ──────────────────────────────────────────────────────────
 
-const PUBLIC_PATHS = ['/login', '/favicon.ico', '/api/health'];
+const PUBLIC_PATHS = ['/login', '/favicon.ico', '/api/health', '/api/import-design'];
 
 function requireAuth(req, res, next) {
   if (req.session && req.session.authenticated) return next();
@@ -156,6 +158,28 @@ function getDefaultAccount() {
 
 function genAccountId() {
   return `acc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+// ─── Pending designs helpers ──────────────────────────────────────────────────
+
+function readPending() {
+  try { return JSON.parse(fs.readFileSync(PENDING_FILE, 'utf8')); }
+  catch { return []; }
+}
+
+function savePending(data) {
+  fs.writeFileSync(PENDING_FILE, JSON.stringify(data, null, 2));
+}
+
+// ─── Bookmarklet key (gerado automaticamente, persistido em config.json) ──────
+
+function getBookmarkletKey() {
+  const cfg = readConfig();
+  if (!cfg.bookmarkletKey) {
+    cfg.bookmarkletKey = crypto.randomBytes(16).toString('hex');
+    saveConfig(cfg);
+  }
+  return cfg.bookmarkletKey;
 }
 
 // ─── Auto-migração de env vars legadas ───────────────────────────────────────
@@ -402,6 +426,83 @@ async function doPublish(post, pageToken, account) {
     return { success: true, instagramPostId: pub.id };
   }
 }
+
+// ─── Bookmarklet key (leitura para UI) ───────────────────────────────────────
+
+app.get('/api/bookmarklet-key', (req, res) => {
+  res.json({ key: getBookmarkletKey() });
+});
+
+// ─── Import design via bookmarklet (sem auth de sessão, valida chave) ─────────
+
+app.post('/api/import-design', async (req, res) => {
+  const { html, key, width, height, name } = req.body;
+
+  if (!key || key !== getBookmarkletKey()) {
+    return res.status(401).json({ success: false, error: 'Chave inválida' });
+  }
+  if (!html) return res.status(400).json({ success: false, error: 'HTML obrigatório' });
+  if (html.length > 5 * 1024 * 1024) return res.status(400).json({ success: false, error: 'HTML excede 5MB' });
+
+  const w = Math.max(100, Math.min(4000, parseInt(width) || 1080));
+  const h = Math.max(100, Math.min(4000, parseInt(height) || 1080));
+
+  const pendingId = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const filename = `${pendingId}.png`;
+  const outPath = path.join(UPLOADS_DIR, filename);
+
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      headless: true,
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: w, height: h, deviceScaleFactor: 2 });
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
+    const buffer = await page.screenshot({ type: 'png', omitBackground: false });
+    fs.writeFileSync(outPath, buffer);
+
+    const pending = readPending();
+    pending.unshift({
+      id: pendingId,
+      name: (name || 'Design Claude').slice(0, 100),
+      filename,
+      createdAt: new Date().toISOString(),
+    });
+    savePending(pending);
+
+    console.log(`[import-design] Novo design: ${pendingId}`);
+    res.json({ success: true, id: pendingId, previewUrl: `/uploads/${filename}` });
+  } catch (err) {
+    console.error('[import-design] Erro:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  } finally {
+    if (browser) await browser.close().catch(() => {});
+  }
+});
+
+// ─── Pending designs (auth) ───────────────────────────────────────────────────
+
+app.get('/api/pending', (req, res) => {
+  res.json(readPending());
+});
+
+app.delete('/api/pending/:id', (req, res) => {
+  let pending = readPending();
+  const item = pending.find(p => p.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Design não encontrado' });
+
+  // Remove arquivo PNG
+  const filePath = path.join(UPLOADS_DIR, item.filename);
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+  pending = pending.filter(p => p.id !== req.params.id);
+  savePending(pending);
+  res.json({ success: true });
+});
 
 // ─── Conversor HTML → PNG ─────────────────────────────────────────────────────
 

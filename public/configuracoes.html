@@ -216,6 +216,66 @@
     /* ── Spinner ── */
     .spinner{width:13px;height:13px;border:2px solid rgba(10,8,6,.25);border-top-color:rgba(10,8,6,.85);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
     .spinner-light{width:13px;height:13px;border:2px solid rgba(212,175,55,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+
+    /* ── Bookmarklet ── */
+    .bookmarklet-card{
+      background:var(--glass-surface);backdrop-filter:blur(14px);
+      border:1px solid var(--glass-hi);border-radius:var(--r);
+      padding:22px 24px;
+    }
+    .bookmarklet-card h3{font-size:15px;font-weight:800;margin-bottom:6px;color:var(--text)}
+    .bookmarklet-desc{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.55}
+
+    .key-row{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+    .key-display{
+      flex:1;padding:10px 14px;
+      background:rgba(20,14,8,.7);
+      border:1px solid rgba(212,175,55,.14);border-radius:var(--r-sm);
+      font-family:monospace;font-size:12px;color:var(--muted);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .btn-copy-key{
+      background:rgba(212,175,55,.10);border:1px solid rgba(212,175,55,.22);
+      color:var(--gold);border-radius:var(--r-sm);padding:9px 14px;
+      font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+      transition:all .15s;white-space:nowrap;flex-shrink:0;
+    }
+    .btn-copy-key:hover{background:rgba(212,175,55,.18);border-color:rgba(212,175,55,.4)}
+
+    .bookmarklet-link-wrap{
+      display:flex;align-items:center;gap:14px;
+      padding:18px;
+      background:rgba(212,175,55,.04);
+      border:2px dashed rgba(212,175,55,.22);border-radius:var(--r);
+    }
+    .bookmarklet-drag-icon{
+      width:48px;height:48px;border-radius:12px;flex-shrink:0;
+      background:linear-gradient(135deg,var(--gold) 0%,var(--bronze) 100%);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .bookmarklet-drag-icon svg{width:22px;height:22px;fill:none;stroke:rgba(10,8,6,.85);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .bookmarklet-drag-info{flex:1}
+    .bookmarklet-drag-title{font-size:13px;font-weight:700;margin-bottom:3px}
+    .bookmarklet-drag-sub{font-size:11px;color:var(--muted);line-height:1.4}
+
+    .bookmarklet-anchor{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:10px 18px;
+      background:linear-gradient(135deg,var(--gold) 0%,var(--amber) 60%,var(--bronze) 100%);
+      background-size:200% auto;
+      border-radius:var(--r-sm);
+      color:rgba(10,8,6,.9);font-family:inherit;font-size:13px;font-weight:800;
+      text-decoration:none;cursor:grab;flex-shrink:0;
+      transition:opacity .15s;border:none;
+    }
+    .bookmarklet-anchor:hover{opacity:.88}
+    .bookmarklet-anchor:active{cursor:grabbing}
+    .bookmarklet-anchor svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+    .bookmarklet-steps{margin-top:16px;padding:14px 16px;background:rgba(10,8,6,.35);border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.04)}
+    .bookmarklet-steps ol{padding-left:18px;display:flex;flex-direction:column;gap:6px}
+    .bookmarklet-steps li{font-size:12px;color:var(--muted);line-height:1.45}
+    .bookmarklet-steps li strong{color:var(--text)}
   </style>
 </head>
 <body>
@@ -316,6 +376,47 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           Salvar nova senha
         </button>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:32px"></div>
+    <div class="section-title">Bookmarklet — Claude Design</div>
+
+    <div class="bookmarklet-card">
+      <h3>Enviar design direto do Claude.ai</h3>
+      <p class="bookmarklet-desc">
+        Depois de criar um design HTML no Claude.ai, clique no bookmarklet para enviar o código diretamente para o Content Planner — sem precisar baixar nem copiar nada.
+      </p>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Chave de acesso</div>
+      <div class="key-row">
+        <div class="key-display" id="bm-key-display">Carregando...</div>
+        <button class="btn-copy-key" onclick="copyKey()">Copiar</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Bookmarklet</div>
+      <div class="bookmarklet-link-wrap">
+        <div class="bookmarklet-drag-icon">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="bookmarklet-drag-info">
+          <div class="bookmarklet-drag-title">Arraste para a barra de favoritos</div>
+          <div class="bookmarklet-drag-sub">Ou clique com o botão direito → "Adicionar aos favoritos"</div>
+        </div>
+        <a id="bm-anchor" class="bookmarklet-anchor" href="#" onclick="return false">
+          <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Enviar Design
+        </a>
+      </div>
+
+      <div class="bookmarklet-steps">
+        <ol>
+          <li><strong>Adicione</strong> o bookmarklet aos favoritos (arraste o botão acima para a barra de favoritos)</li>
+          <li><strong>Crie um design HTML</strong> no Claude.ai normalmente</li>
+          <li><strong>Clique no bookmarklet</strong> — o design é convertido em PNG e enviado aqui</li>
+          <li>Abra o Content Planner: aparecerá um <strong>badge amarelo</strong> com os designs prontos para agendar</li>
+        </ol>
       </div>
     </div>
 
@@ -537,8 +638,38 @@
     }
   }
 
+  // ── Bookmarklet ───────────────────────────────────────────────────────────
+  let _bmKey = '';
+
+  async function loadBookmarklet() {
+    try {
+      const resp = await fetch('/api/bookmarklet-key');
+      const data = await resp.json();
+      _bmKey = data.key;
+      document.getElementById('bm-key-display').textContent = _bmKey;
+      buildBookmarkletAnchor(_bmKey);
+    } catch (err) {
+      document.getElementById('bm-key-display').textContent = 'Erro ao carregar';
+    }
+  }
+
+  function buildBookmarkletAnchor(key) {
+    const plannerUrl = window.location.origin;
+    // Bookmarklet JS — minified, key and URL baked in
+    const js = `(function(){var k=${JSON.stringify(key)},u=${JSON.stringify(plannerUrl)};var blocks=document.querySelectorAll('code');var html=null;for(var i=blocks.length-1;i>=0;i--){var t=blocks[i].textContent.trim();if(t.startsWith('<!DOCTYPE')||t.startsWith('<html')||(t.includes('<body')&&t.includes('</body>')&&t.length>200)){html=t;break;}}if(!html){alert('Nenhum c\\u00f3digo HTML encontrado.\\nGere um design no Claude.ai primeiro.');return;}var d=document.createElement('div');d.style.cssText='position:fixed;top:16px;right:16px;background:#1a1207;color:#D4AF37;padding:12px 18px;border-radius:10px;border:1px solid rgba(212,175,55,.3);z-index:2147483647;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:280px';d.textContent='Enviando design...';document.body.appendChild(d);fetch(u+'/api/import-design',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html:html,key:k,width:1080,height:1080,name:'Claude '+new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})})}).then(function(r){return r.json()}).then(function(j){if(j.success){d.style.background='#071a07';d.style.color='#4ade80';d.style.borderColor='rgba(74,222,128,.3)';d.textContent='\\u2713 Design enviado! Abra o Content Planner.'}else{d.style.background='#1a0707';d.style.color='#f87171';d.textContent='Erro: '+(j.error||'falha')}setTimeout(function(){d.remove()},4500)}).catch(function(){d.style.background='#1a0707';d.style.color='#f87171';d.textContent='Erro de conex\\u00e3o.';setTimeout(function(){d.remove()},4500)})})();`;
+    const anchor = document.getElementById('bm-anchor');
+    anchor.href = 'javascript:' + encodeURIComponent(js);
+    anchor.removeAttribute('onclick');
+  }
+
+  function copyKey() {
+    if (!_bmKey) return;
+    navigator.clipboard.writeText(_bmKey).then(() => showToast('Chave copiada!', 'ok')).catch(() => showToast('Erro ao copiar', 'err'));
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────────
   loadAccounts();
+  loadBookmarklet();
 </script>
 </body>
 </html>
