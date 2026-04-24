@@ -954,10 +954,27 @@
     document.querySelectorAll('.type-tab').forEach(el => el.classList.toggle('active', el.dataset.type === t));
     const label = document.getElementById('upload-label');
     const hint = document.getElementById('upload-hint');
-    if (t === 'carrossel') { label.textContent = 'Slides (arraste em ordem)'; hint.textContent = 'Suba os slides em ordem. Máx 10 imagens.'; }
-    else if (t === 'post') { label.textContent = 'Imagem do post'; hint.textContent = ''; }
-    else if (t === 'story') { label.textContent = 'Imagem do story'; hint.textContent = 'Opcional — para referência visual.'; }
-    else if (t === 'reel') { label.textContent = 'Thumbnail (capa)'; hint.textContent = 'Suba a capa para referência visual.'; }
+    const fileInput = document.getElementById('file-input');
+    const uzText = document.querySelector('.uz-text');
+
+    if (t === 'reel') {
+      label.textContent = 'Vídeo do Reel';
+      hint.textContent = 'Envie o arquivo .mp4 do Reel. Máx 200 MB.';
+      fileInput.accept = 'video/mp4,video/*';
+      fileInput.multiple = false;
+      if (uzText) uzText.textContent = 'MP4 — máx 200 MB';
+    } else {
+      fileInput.accept = 'image/*';
+      fileInput.multiple = true;
+      if (uzText) uzText.textContent = 'PNG, JPG, WebP — máx 30 MB';
+      if (t === 'carrossel') { label.textContent = 'Slides (arraste em ordem)'; hint.textContent = 'Suba os slides em ordem. Máx 10 imagens.'; }
+      else if (t === 'post') { label.textContent = 'Imagem do post'; hint.textContent = ''; }
+      else if (t === 'story') { label.textContent = 'Imagem do story'; hint.textContent = 'Opcional — para referência visual.'; }
+    }
+
+    // Limpa preview ao trocar tipo
+    fileObjects = [];
+    document.getElementById('previews').innerHTML = '';
   }
 
   // ── File handling ──────────────────────────────────────────────────────
@@ -969,18 +986,36 @@
   }
 
   function addFile(file) {
-    if (!file.type.startsWith('image/')) return;
-    const idx = fileObjects.length;
-    fileObjects.push(file);
-    const reader = new FileReader();
-    reader.onload = e => {
+    const currentType = document.getElementById('type-input').value;
+    const isReel = currentType === 'reel';
+
+    if (isReel) {
+      if (!file.type.startsWith('video/')) return;
+      // Reel: só um arquivo, substitui se já existir
+      fileObjects = [file];
+      document.getElementById('previews').innerHTML = '';
+      const url = URL.createObjectURL(file);
       const wrap = document.createElement('div');
       wrap.className = 'prev-wrap';
-      wrap.dataset.idx = idx;
-      wrap.innerHTML = `<img class="prev-img" src="${e.target.result}"><button class="prev-rm" onclick="removeFile(${idx})">×</button>`;
+      wrap.dataset.idx = 0;
+      wrap.innerHTML = `
+        <video class="prev-img" src="${url}" controls style="object-fit:cover;background:#0a0806"></video>
+        <button class="prev-rm" onclick="removeFile(0)">×</button>`;
       document.getElementById('previews').appendChild(wrap);
-    };
-    reader.readAsDataURL(file);
+    } else {
+      if (!file.type.startsWith('image/')) return;
+      const idx = fileObjects.length;
+      fileObjects.push(file);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const wrap = document.createElement('div');
+        wrap.className = 'prev-wrap';
+        wrap.dataset.idx = idx;
+        wrap.innerHTML = `<img class="prev-img" src="${e.target.result}"><button class="prev-rm" onclick="removeFile(${idx})">×</button>`;
+        document.getElementById('previews').appendChild(wrap);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function removeFile(idx) {

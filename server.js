@@ -46,7 +46,7 @@ const storage = multer.diskStorage({
   destination: UPLOADS_DIR,
   filename: (req, file, cb) => cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${file.originalname}`),
 });
-const upload = multer({ storage, limits: { fileSize: 30 * 1024 * 1024 } });
+const upload = multer({ storage, limits: { fileSize: 200 * 1024 * 1024 } });
 
 // ─── Middlewares globais ──────────────────────────────────────────────────────
 
@@ -384,6 +384,36 @@ async function createCarouselContainer(childIds, caption, pageToken, account) {
   return res.json();
 }
 
+async function createReelContainer(videoUrl, caption, pageToken, account) {
+  const params = new URLSearchParams({
+    media_type: 'REELS',
+    video_url: videoUrl,
+    caption,
+    share_to_feed: 'true',
+    access_token: pageToken,
+  });
+  const res = await fetch(`https://graph.facebook.com/v25.0/${account.igUserId}/media`, {
+    method: 'POST', body: params,
+  });
+  return res.json();
+}
+
+async function waitForReelProcessing(containerId, pageToken, maxAttempts = 30) {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, 10000));
+    const res = await fetch(
+      `https://graph.facebook.com/v25.0/${containerId}?fields=status_code,status&access_token=${pageToken}`
+    );
+    const d = await res.json();
+    if (d.error) throw new Error(d.error.message);
+    const sc = d.status_code;
+    console.log(`[reel] Status: ${sc} (tentativa ${i + 1}/${maxAttempts})`);
+    if (sc === 'FINISHED') return;
+    if (sc === 'ERROR' || sc === 'EXPIRED') throw new Error(`Processamento falhou: ${d.status || sc}`);
+  }
+  throw new Error('Timeout: Reel não processou em 5 minutos');
+}
+
 async function publishContainer(containerId, pageToken, account) {
   const params = new URLSearchParams({ creation_id: containerId, access_token: pageToken });
   const res = await fetch(`https://graph.facebook.com/v25.0/${account.igUserId}/media_publish`, {
@@ -393,7 +423,24 @@ async function publishContainer(containerId, pageToken, account) {
 }
 
 async function doPublish(post, pageToken, account) {
-  if (post.type === 'carrossel' && post.images && post.images.length > 1) {
+  if (post.type === 'reel') {
+    const videoFile = post.images && post.images[0];
+    if (!videoFile) return { success: false, error: 'Nenhum vídeo MP4 disponível' };
+
+    console.log(`[publish] Reel — upload para catbox.moe...`);
+    const videoUrl = await resolvePublicUrl(videoFile);
+
+    const container = await createReelContainer(videoUrl, post.caption, pageToken, account);
+    if (container.error) return { success: false, error: container.error.message };
+
+    console.log(`[publish] Reel container: ${container.id} — aguardando processamento...`);
+    await waitForReelProcessing(container.id, pageToken);
+
+    const pub = await publishContainer(container.id, pageToken, account);
+    if (pub.error) return { success: false, error: pub.error.message };
+    return { success: true, instagramPostId: pub.id };
+
+  } else if (post.type === 'carrossel' && post.images && post.images.length > 1) {
     console.log(`[publish] Carrossel com ${post.images.length} slides — fazendo upload para catbox.moe...`);
     const publicUrls = await Promise.all(post.images.map(img => resolvePublicUrl(img)));
 
