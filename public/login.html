@@ -8,75 +8,175 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg:#131214;--surface:#1B191D;--surface2:#24212A;--surface3:#332F38;
-      --primary:#8B82FF;--pdim:rgba(139,130,255,.12);
-      --danger:#F07070;
-      --text:#F8FAFC;--muted:#94A3B8;
-      --border:rgba(139,130,255,.09);
-      --r:12px;--r-sm:8px;
-      --glass-bg:rgba(19,18,20,.52);
-      --glass-hi:rgba(255,255,255,.09);
-      --glass-shine:rgba(255,255,255,.13);
-      --glass-blur:blur(22px) saturate(1.7);
+      --bg:#0A0806;
+      --surface:rgba(20,14,8,.72);
+      --gold:#D4AF37;
+      --amber:#E8A030;
+      --terracotta:#C67B5C;
+      --bronze:#B87333;
+      --text:#F0E6D3;
+      --muted:#A89070;
+      --danger:#E07060;
+      --glass-bg:rgba(10,8,6,.58);
+      --glass-hi:rgba(212,175,55,.14);
+      --glass-shine:rgba(240,200,100,.10);
+      --glass-blur:blur(24px) saturate(1.6);
+      --r:14px;--r-sm:9px;
     }
+
     body{
       font-family:'Manrope',sans-serif;
       background:var(--bg);color:var(--text);
       min-height:100vh;display:flex;align-items:center;justify-content:center;
       position:relative;overflow:hidden;
     }
-    body::before{
-      content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-      background:
-        radial-gradient(ellipse 55% 40% at 15% 20%, rgba(139,130,255,.13) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 35% at 85% 75%, rgba(96,196,248,.08) 0%, transparent 65%),
-        radial-gradient(ellipse 30% 25% at 55% 55%, rgba(91,217,139,.05) 0%, transparent 60%);
+
+    /* ── Grain overlay ── */
+    body::after{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:99;
+      opacity:.032;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+      background-size:180px 180px;
     }
+
+    /* ── Animated blobs ── */
+    .blob{position:fixed;pointer-events:none;filter:blur(70px);opacity:.55;z-index:0}
+
+    .blob-1{
+      width:520px;height:440px;
+      background:radial-gradient(ellipse at 40% 50%, #D4AF37 0%, #B87333 45%, transparent 70%);
+      top:-140px;left:-160px;
+      animation:morph 14s ease-in-out infinite, float-1 18s ease-in-out infinite;
+    }
+    .blob-2{
+      width:400px;height:360px;
+      background:radial-gradient(ellipse at 55% 45%, #E8A030 0%, #C67B5C 50%, transparent 70%);
+      bottom:-100px;right:-120px;
+      animation:morph 11s ease-in-out infinite reverse, float-2 22s ease-in-out infinite;
+    }
+    .blob-3{
+      width:300px;height:260px;
+      background:radial-gradient(ellipse at 50% 50%, #C67B5C 0%, #B87333 55%, transparent 72%);
+      top:45%;left:55%;
+      animation:morph 16s ease-in-out infinite 3s, float-3 26s ease-in-out infinite;
+    }
+
+    @keyframes morph{
+      0%,100%{border-radius:60% 40% 70% 30% / 50% 65% 35% 50%}
+      25%     {border-radius:40% 60% 30% 70% / 65% 35% 65% 35%}
+      50%     {border-radius:70% 30% 55% 45% / 35% 70% 30% 65%}
+      75%     {border-radius:45% 55% 40% 60% / 60% 40% 70% 30%}
+    }
+    @keyframes float-1{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%    {transform:translate(28px,-20px) scale(1.04)}
+      66%    {transform:translate(-16px,32px) scale(.97)}
+    }
+    @keyframes float-2{
+      0%,100%{transform:translate(0,0) scale(1)}
+      40%    {transform:translate(-24px,16px) scale(1.05)}
+      70%    {transform:translate(18px,-28px) scale(.96)}
+    }
+    @keyframes float-3{
+      0%,100%{transform:translate(0,0) scale(1)}
+      35%    {transform:translate(20px,22px) scale(1.06)}
+      65%    {transform:translate(-18px,-16px) scale(.95)}
+    }
+
+    /* ── Card ── */
     .card{
       position:relative;z-index:1;
       background:var(--glass-bg);
       backdrop-filter:var(--glass-blur);
       -webkit-backdrop-filter:var(--glass-blur);
       border:1px solid var(--glass-hi);
-      box-shadow:inset 0 1px 0 var(--glass-shine),0 8px 40px rgba(0,0,0,.4);
+      box-shadow:
+        inset 0 1px 0 var(--glass-shine),
+        0 0 0 1px rgba(0,0,0,.3),
+        0 12px 48px rgba(0,0,0,.55),
+        0 2px 8px rgba(0,0,0,.3);
       border-radius:var(--r);
-      padding:40px 36px;
+      padding:44px 40px;
       width:100%;max-width:380px;
     }
-    .logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center}
-    .logo-mark{width:40px;height:40px;background:var(--primary);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .logo-mark svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* ── Logo ── */
+    .logo{display:flex;align-items:center;gap:13px;margin-bottom:36px;justify-content:center}
+    .logo-mark{
+      width:44px;height:44px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      position:relative;overflow:hidden;
+      background:linear-gradient(135deg, var(--gold) 0%, var(--amber) 50%, var(--bronze) 100%);
+      background-size:300% auto;
+      animation:gold-shimmer 4s ease-in-out infinite;
+    }
+    .logo-mark::before{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg, rgba(255,255,255,.22) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .logo-mark svg{width:21px;height:21px;fill:none;stroke:rgba(10,8,6,.85);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;position:relative}
+
+    @keyframes gold-shimmer{
+      0%,100%{background-position:0% 50%}
+      50%    {background-position:100% 50%}
+    }
+
     .logo-text{display:flex;flex-direction:column;gap:2px}
-    .logo-name{font-size:15px;font-weight:800;line-height:1}
+    .logo-name{font-size:15px;font-weight:800;line-height:1;color:var(--text)}
     .logo-sub{font-size:11px;color:var(--muted);font-weight:500}
-    label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
+
+    /* ── Form ── */
+    label{
+      display:block;font-size:11px;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;
+      color:var(--muted);margin-bottom:9px;
+    }
     input[type=password]{
-      width:100%;padding:12px 14px;
-      background:rgba(36,33,42,.6);
-      border:1px solid var(--glass-hi);
+      width:100%;padding:12px 15px;
+      background:rgba(30,20,10,.55);
+      border:1px solid rgba(212,175,55,.18);
       border-radius:var(--r-sm);
       color:var(--text);font-family:inherit;font-size:14px;font-weight:500;
-      outline:none;transition:border-color .2s;
+      outline:none;transition:border-color .2s, box-shadow .2s;
     }
-    input[type=password]:focus{border-color:rgba(139,130,255,.4)}
+    input[type=password]:focus{
+      border-color:rgba(212,175,55,.5);
+      box-shadow:0 0 0 3px rgba(212,175,55,.10);
+    }
+    input[type=password]::placeholder{color:rgba(168,144,112,.45)}
+
     .btn{
-      margin-top:20px;width:100%;
-      background:var(--primary);color:#fff;border:none;
-      border-radius:var(--r-sm);padding:13px;
-      font-family:inherit;font-size:14px;font-weight:700;
-      cursor:pointer;transition:opacity .15s;
+      margin-top:22px;width:100%;
+      background:linear-gradient(135deg, var(--gold) 0%, var(--amber) 60%, var(--bronze) 100%);
+      background-size:200% auto;
+      color:rgba(10,8,6,.9);
+      border:none;border-radius:var(--r-sm);padding:14px;
+      font-family:inherit;font-size:14px;font-weight:800;
+      cursor:pointer;transition:opacity .15s, background-position .4s;
+      letter-spacing:.01em;
     }
-    .btn:hover{opacity:.85}
+    .btn:hover{
+      opacity:.9;
+      background-position:right center;
+    }
+
     .error{
-      margin-top:16px;padding:10px 14px;
-      background:rgba(240,112,112,.1);
-      border:1px solid rgba(240,112,112,.2);
+      margin-top:18px;padding:11px 15px;
+      background:rgba(224,112,96,.08);
+      border:1px solid rgba(224,112,96,.22);
       border-radius:var(--r-sm);
       color:var(--danger);font-size:13px;font-weight:600;
     }
   </style>
 </head>
 <body>
+
+  <!-- Blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
   <div class="card">
     <div class="logo">
       <div class="logo-mark">
